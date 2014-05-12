@@ -7,11 +7,15 @@
  */
 
 'use strict';
-var which = require('which');
-var exec = require('child_process').exec;
+
+var which = require('which'),
+    cp = require('child_process'),
+    sys = require('sys');
 
 module.exports = function (grunt) {
 
+    var log = grunt.log;
+    
     // Please see the Grunt documentation for more information regarding task
     // creation: http://gruntjs.com/creating-tasks
 
@@ -19,8 +23,13 @@ module.exports = function (grunt) {
 
         // Merge task-specific and/or target-specific options with these defaults.
         var options = this.options({
-            punctuation: '.',
-            separator: ', '
+            token: null,
+            app_id: null,
+            file: null,
+            notes: 'New release',
+            notify: 2, // Notify all
+            download: true,
+            tags: ''
         });
 
         try {
@@ -30,55 +39,55 @@ module.exports = function (grunt) {
                 '\nYou need to have Ruby installed and in your PATH for this task to work.'
             );
         }
-
-        var bin = 'ruby ruby/hockeyapp.rb';
+        
+        if(options['token'] === null) {
+	    return grunt.warn(
+                'Token option is required!'
+            );
+	} else if(options['app_id'] === null) {
+	    return grunt.warn(
+                'Application id option is required!'
+            );
+	} else if(options['file'] === null) {
+	    return grunt.warn(
+                'File path is required!'
+            );
+	}
+        
+	var rubyfile = __dirname + '/../ruby/hockeyapp.rb';
+	
+	var status = 2; // default - allow to download
+	if(!options['download']) {
+	  status = 1; // dont allow users to download
+	}
         var args = [
-            "ass"
-
+             '--token="'+options['token']+'"',
+             '--app_id="'+options['app_id']+'"',
+             '--file="'+options['file']+'"',
+             '--notes="'+options['notes']+'"',
+             '--status="'+status+'"',
+             '--notify="'+options['notify']+'"',
+             '--tags="'+options['tags']+'"'
         ];
-
-
-
-     //   var childProcess = exec(bin, args);
-
-
-        exec('ruby ruby/hockeyapp.rb', function(error, stdout, stderr) {
-            if (!error) {
-                //do something
-                console.log("no err");
-            } else {
-                console.log("err");
-            }
-        });
-
-
-
-
-        // Iterate over all specified file groups.
-        this.files.forEach(function (f) {
-            // Concat specified files.
-            var src = f.src.filter(function (filepath) {
-                // Warn on and remove invalid source files (if nonull was set).
-                if (!grunt.file.exists(filepath)) {
-                    grunt.log.warn('Source file "' + filepath + '" not found.');
-                    return false;
-                } else {
-                    return true;
-                }
-            }).map(function (filepath) {
-                    // Read file source.
-                    return grunt.file.read(filepath);
-                }).join(grunt.util.normalizelf(options.separator));
-
-            // Handle options.
-            src += options.punctuation;
-
-            // Write the destination file.
-            grunt.file.write(f.dest, src);
-
-            // Print a success message.
-            grunt.log.writeln('File "' + f.dest + '" created.');
-        });
+	var command = 'ruby ' + rubyfile + ' ' + args.join(' ');
+		
+	var done = this.async();
+	
+	grunt.log.subhead('Uploading file "'+options['file']+'" ... ');
+	
+	var childProcess = cp.exec(command, args, function(error, stdout, stderr) {
+	  if(error === null) {
+	    grunt.log.write(stdout);
+	    grunt.log.ok('  Uploaded "' + options['file'] + '"');
+	    done();
+	  } else {
+	    grunt.log.error(stderr);
+	    grunt.log.error('  Error uploading file "' + options['file'] + '"');
+	    done(false);
+	  }
+	});
+	
+	
     });
 
 };
