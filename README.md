@@ -16,6 +16,8 @@ Once the plugin has been installed, it may be enabled inside your Gruntfile with
 ```js
 grunt.loadNpmTasks('grunt-hockeyapp');
 ```
+## Requirement vendor libraries
+This task requires you to have [Ruby](http://www.ruby-lang.org/en/downloads/) and this [HockeyApp gem](https://github.com/tapptic/hockeyapp/). If you're on OS X or Linux you probably already have Ruby installed; test with ruby -v in your terminal. When you've confirmed you have Ruby installed, run `gem update --system && gem install` hockeyapp to install HockeyApp gem.
 
 ## The "hockeyapp" task
 
@@ -24,66 +26,79 @@ In your project's Gruntfile, add a section named `hockeyapp` to the data object 
 
 ```js
 grunt.initConfig({
+  /**
+   * Hockeyapp integration
+   */
   hockeyapp: {
+    /**
+     * Global options
+     */
     options: {
-      // Task-specific options go here.
+        notes: 'New release note',
+        tags: 'Tag1,Tag2', // comma-separated list of tags
+        download: true, // Enable/Disable download
+        notify: 0 // 0 - Don't notify, 1 - Notify all that can install this app, 2 - Notify all
     },
-    your_target: {
-      // Target-specific file lists and/or options go here.
+    /**
+     * App-specific options
+     */
+    Android: {
+        options: {
+            token: 'ABCDE', // Upload Token
+            app_id: 'ABCDE', // Application ID
+            download: false, // Disable download of this app
+            file: 'android_file.apk' // Path to file
+        }
     },
   },
 });
-```
-
+```          
+            
 ### Options
 
-#### options.separator
+#### options.token
 Type: `String`
-Default value: `',  '`
 
-A string value that is used to do something with whatever.
+Upload Token from HockeyApp
 
-#### options.punctuation
+#### options.app_id
 Type: `String`
-Default value: `'.'`
 
-A string value that is used to do something else with whatever else.
+Application ID from HockeyApp
 
-### Usage Examples
+#### options.file
+Type: `String`
 
-#### Default Options
-In this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`
+Path to file to upload (.ipa, .app.zip or .apk)
 
-```js
-grunt.initConfig({
-  hockeyapp: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
-```
+#### options.notes
+Type: `String`
+Default value: `''`
 
-#### Custom Options
-In this example, custom options are used to do something else with whatever else. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result in this case would be `Testing: 1 2 3 !!!`
+Release notes
 
-```js
-grunt.initConfig({
-  hockeyapp: {
-    options: {
-      separator: ': ',
-      punctuation: ' !!!',
-    },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-});
-```
+#### options.notify
+Type: `Integer`
+Default value: `2`
 
-## Contributing
-In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
+Notification:
+  `0` - Don't notify, 
+  `1` - Notify all that can install this app, 
+  `2` - Notify all
+
+#### options.download
+Type: `Boolean`
+Default value: `true`
+
+Download status (can only be set with full-access tokens):
+  `false`: Don't allow users to download or install the version
+  `true`: Available for download or installation
+  
+#### options.tags
+Type: `String`
+Default value: `''`
+
+Restrict download to comma-separated list of tags
 
 ## Release History
 _(Nothing yet)_
