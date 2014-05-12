@@ -75,7 +75,7 @@ module.exports = function (grunt) {
 	
 	grunt.log.subhead('Uploading file "'+options['file']+'" ... ');
 	
-	var childProcess = cp.exec(command, args, function(error, stdout, stderr) {
+	cp.exec(command, args, function(error, stdout, stderr) {
 	  if(error === null) {
 	    grunt.log.write(stdout);
 	    grunt.log.ok('  Uploaded "' + options['file'] + '"');
